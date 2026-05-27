@@ -216,3 +216,8 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# SEC filings data and logs
+data/
+download.log
+*.log
