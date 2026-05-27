@@ -1,0 +1,53 @@
+# Project: Enterprise RAG Assistant for SEC Filings
+# Owner: Rahul Kushal Anchi
+# Purpose: Interview-defensible portfolio project for Full-Stack AI Engineer roles at Citi, Bloomberg, Goldman, Two Sigma, Mount Sinai.
+
+## Stack constraints (do not deviate without explicit user approval)
+- Python 3.11+, FastAPI, async wherever the libraries support it
+- LangChain 0.3+ for orchestration (use LCEL chains, NOT agent abstractions)
+- PostgreSQL 16 with pgvector extension for vector storage
+- LLM providers: Anthropic Claude (default), OpenAI GPT-4o-mini (fallback) — call via official SDKs, not LangChain wrappers, for transparency
+- Embeddings: text-embedding-3-small (OpenAI) — small, cheap, sufficient for this corpus size
+- Reranker: cross-encoder/ms-marco-MiniLM-L-6-v2 via sentence-transformers
+- Frontend: React 18 + Vite + TypeScript + Tailwind, minimal (chat UI only)
+- Eval framework: RAGAS for faithfulness; custom golden-set scorer for citation accuracy
+- Tests: pytest, pytest-asyncio, pytest-cov; target 80%+ coverage on non-IO code
+- Observability: LangSmith for traces; structlog for application logs
+- Deploy target: AWS ECS Fargate (later); local dev with docker-compose
+
+## Author-owned files (Cursor: generate ONLY stubs with TODO comments)
+The following files contain the design decisions an interviewer will probe deepest. Cursor must NOT generate the business logic — only file stubs with one-line docstrings and TODO comments:
+
+- backend/app/ingest/chunker.py — the chunking strategy
+- backend/app/retrieval/hybrid.py — the scoring formula combining BM25 and dense retrieval
+- backend/app/generation/prompts.py — the system prompt, user template, answer schema
+- backend/app/generation/answerer.py — the orchestration of retrieve → rerank → generate
+
+When asked to work on any of these, generate the stub with TODOs and ask the user to provide the implementation.
+
+## What Cursor SHOULD generate freely
+- pyproject.toml, Dockerfile, docker-compose.yml, alembic migrations
+- FastAPI app skeleton, routers, Pydantic schemas (DTOs)
+- SQLAlchemy models, database session setup
+- Logging configuration (structlog)
+- Test fixtures and harness setup
+- React frontend shell (components, hooks, API client)
+- CI workflow YAML
+- README and documentation structure
+
+## Code quality rules (enforce on every generation)
+- All Python functions: type hints required, including return types
+- Pydantic v2 models for every request/response DTO
+- No bare `except:` — always catch specific exceptions
+- Use `async def` for any function that awaits I/O
+- Functions over 40 lines must be split
+- Use `structlog` for logging, never `print` in application code
+- Configuration via Pydantic Settings (loads from env vars), never hardcoded values
+- All LLM calls go through a single `llm_client` module so providers can be swapped
+
+## Process rules
+- One Composer prompt = one logical commit
+- After each generation, suggest the appropriate `git commit -m "..."` message
+- After each generation, suggest which test commands to run to verify
+- Never delete the user's hand-written code in author-owned files
+- If a generation requires more than 8 files in one pass, split into multiple Composer calls
