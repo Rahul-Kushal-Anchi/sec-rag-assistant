@@ -8,7 +8,6 @@ from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict, Field
 
-
 FormType = Literal["10-K", "10-Q"]
 
 

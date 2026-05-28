@@ -6,9 +6,8 @@ build-backend = "hatchling.build"
 name = "sec-rag-assistant"
 version = "0.1.0"
 description = "Enterprise RAG assistant for SEC filings (10-K, 10-Q)."
-readme = "../README.md"
 requires-python = ">=3.11"
-license = { file = "../LICENSE" }
+license = "MIT"
 authors = [{ name = "Rahul Kushal Anchi" }]
 
 dependencies = [
@@ -54,10 +53,14 @@ packages = ["app"]
 [tool.ruff]
 line-length = 100
 target-version = "py311"
+extend-exclude = ["alembic/versions"]
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "B", "UP", "ASYNC"]
 ignore = ["E501"]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/*" = ["B011"]
 
 [tool.mypy]
 python_version = "3.11"
