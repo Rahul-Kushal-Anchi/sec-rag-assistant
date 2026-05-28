@@ -1,0 +1,6 @@
+{
+  "python.defaultInterpreterPath": "./.venv/bin/python",
+  "python.analysis.extraPaths": ["."],
+  "basedpyright.analysis.extraPaths": ["."],
+  "python.terminal.activateEnvironment": false
+}
