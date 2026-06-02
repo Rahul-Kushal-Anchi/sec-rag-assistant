@@ -23,18 +23,35 @@ from sqlalchemy.ext.asyncio import (
 )
 
 
-@pytest.fixture(scope="session")
-def event_loop() -> Iterator[asyncio.AbstractEventLoop]:
-    """Session-scoped event loop for async fixtures."""
-    loop = asyncio.new_event_loop()
-    yield loop
-    loop.close()
-
-
-@pytest_asyncio.fixture(scope="session")
+@pytest_asyncio.fixture()
 async def db_engine():
-    """In-memory async SQLite engine for fast unit tests."""
+    """In-memory async SQLite engine for fast unit tests.
+    
+    Note: SQLite doesn't support JSONB, so we handle it specially during table creation.
+    """
+    from app.db.models import Base
+    from sqlalchemy.types import JSON
+    from sqlalchemy.dialects.postgresql import JSONB
+    
+    # Create engine
     engine = create_async_engine("sqlite+aiosqlite:///:memory:", future=True)
+    
+    # Temporarily replace JSONB columns with JSON for SQLite
+    # This is a workaround since SQLite doesn't have JSONB
+    def create_tables_sqlite_compat(connection):
+        """Create tables with JSON instead of JSONB for SQLite."""
+        # Iterate through all tables and temporarily swap JSONB -> JSON
+        for table in Base.metadata.sorted_tables:
+            for column in table.columns:
+                if isinstance(column.type, JSONB):
+                    column.type = JSON()
+        
+        Base.metadata.create_all(connection)
+    
+    # Create all tables with SQLite-compatible types
+    async with engine.begin() as conn:
+        await conn.run_sync(create_tables_sqlite_compat)
+    
     try:
         yield engine
     finally:
@@ -50,6 +67,12 @@ async def db_session(db_engine) -> AsyncIterator[AsyncSession]:
             yield session
         finally:
             await session.rollback()
+
+
+@pytest_asyncio.fixture()
+async def db_session_maker(db_engine) -> async_sessionmaker[AsyncSession]:
+    """Session maker factory for tests that need to create their own sessions."""
+    return async_sessionmaker(bind=db_engine, expire_on_commit=False)
 
 
 @pytest.fixture()

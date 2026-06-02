@@ -61,6 +61,7 @@ ignore = ["E501"]
 
 [tool.ruff.lint.per-file-ignores]
 "tests/*" = ["B011"]
+"app/ingest/pipeline.py" = ["ASYNC240"]  # Path operations are lightweight filesystem checks
 
 [tool.mypy]
 python_version = "3.11"
