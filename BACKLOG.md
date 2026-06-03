@@ -41,3 +41,11 @@ Things that would be cool but are explicitly out of scope for the 5-7 day build.
 - Audit log
 - Output safety filter
 - Source attribution UI
+
+## Parser improvements 
+- Section name regex on iXBRL filings occasionally captures trailing words
+  ("Risk Factors The") or truncates long titles ("Market for Registrant"
+  instead of full "Market for Registrant's Common Equity, Related
+  Stockholder Matters...")
+- Acceptable for current scope because chunker uses section labels for metadata only; LLM retrieval is driven by chunk content, not labels
+- Would refine via corpus-wide regex training or LLM-based section header extraction on a per-filing basis (~4 hours of work, low ROI right now)
