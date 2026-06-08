@@ -438,34 +438,18 @@ async def test_pipeline_idempotency(
 
 
 @pytest.mark.asyncio
-async def test_pipeline_handles_empty_chunker_gracefully(
+async def test_pipeline_ingests_real_chunks_from_synthetic_filing(
     synthetic_filing_path: Path,
     db_session_maker,
     mock_embedder: OpenAIEmbedder,
 ) -> None:
-    """Test that pipeline handles chunker returning empty list (stub behavior)."""
-    # Use real chunker (which returns empty list as a stub)
+    """Verify the pipeline produces real chunks via the chunker on a synthetic filing."""
     pipeline = IngestionPipeline(db_session_maker=db_session_maker, embedder=mock_embedder)
-
     chunks_inserted = await pipeline.ingest_filing(synthetic_filing_path)
-    assert chunks_inserted == 0
-
-    # Verify Filing was still created
-    async with db_session_maker() as session:
-        stmt = select(Filing)
-        result = await session.execute(stmt)
-        filings = result.scalars().all()
-        assert len(filings) == 1
-        assert filings[0].accession_number == "0000123456-25-000001"
-
-        # Verify no chunks were created
-        stmt_chunks = select(ChunkORM)
-        result_chunks = await session.execute(stmt_chunks)
-        chunks = result_chunks.scalars().all()
-        assert len(chunks) == 0
-
-    # Verify embedder was NOT called (no chunks to embed)
-    mock_embedder.embed_in_batches.assert_not_called()
+    # Synthetic fixture has 2 small pages; chunker produces 1+ chunks per page
+    assert chunks_inserted >= 2
+    # Embedder must have been called since real chunks were produced
+    mock_embedder.embed_in_batches.assert_called_once()
 
 
 @pytest.mark.asyncio
