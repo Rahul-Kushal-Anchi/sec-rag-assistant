@@ -18,17 +18,23 @@ Living document. Update as you make each choice. Each entry is your interview cr
 
 ---
 
-## D2: Chunking strategy
+## D2: Chunk Size, Overlap, and Recursive Splitting
 
-**Decision:** [Fill in after Day 2 morning]
-
-Options considered:
-- Fixed-size (1000 chars / 200 overlap) — simple, predictable
-- Recursive character splitter — respects paragraph boundaries
-- Section-aware — never split across SEC 10-K section boundaries
-- Sentence-aware — pack sentences greedily
-
-**Why this matters:** "How did you handle the structure of 10-K filings?" — guaranteed interview question.
+We chose an 800-character target chunk size — roughly 200 tokens for
+text-embedding-3-small — because SEC filing pages are dense, and this
+size is large enough to preserve financial context while still staying
+small enough for reliable embedding and retrieval. The 150-character
+overlap is about 18% of the chunk size, which gives the next chunk
+enough carryover context without creating too much duplicate text in
+the vector store. Instead of cutting every 800 characters blindly, the
+chunker uses recursive separators so it can prefer paragraph breaks,
+then line breaks, then sentence boundaries, then word boundaries before
+falling back to raw character splitting. This matters because SEC
+filings often contain long risk disclosures, legal language, tables
+converted into text, and section-based narratives where meaning can be
+lost if a sentence or paragraph is split in the wrong place. The result
+is a chunking strategy that balances retrieval accuracy, storage
+efficiency, and readability when answering questions from 10-K filings.
 
 ---
 
